@@ -491,38 +491,30 @@ function downloadHTML() {
 async function logToSheets() {
   try {
     var f = fields();
-    var apiBase = CFG.sharepointSite + '/_api';
+    var url = "https://forms.guest.usercontent.microsoft/formapi/api/aa8bdaa4-8feb-46c0-b5e6-31c96337579b/users/38ccb83f-2f89-4dca-a8eb-9782dbf98d03/forms('pNqLquuPwEa15jHJYzdXmz-4zDiJL8pNqOuXgtv5jQNUNkJFRzc4QzBVT0JCOFcwRTAxRDZLTVJWVy4u')/responses";
 
-    // Étape 1 : récupérer le Request Digest (token anti-CSRF de SharePoint)
-    var digestResp = await fetch(apiBase + '/contextinfo', {
-      method: 'POST',
-      headers: { 'Accept': 'application/json;odata=nometadata' },
-      credentials: 'include'
-    });
-    if (!digestResp.ok) return;
-    var digestData = await digestResp.json();
-    var digest = digestData.FormDigestValue;
+    var answers = [
+      { questionId: "r2491cf1de2b44ebfb4184f18b9df0a84", answer1: f.nom || "" },
+      { questionId: "rdcc73ae81ccf458483ac1a22e2d9199b", answer1: f.prenom || "" },
+      { questionId: "raebdd709fa0a48fd931695d847bbf1b7", answer1: f.mail || "" },
+      { questionId: "r4721de06598d44289e6f08d7ec1bf144", answer1: f.fn1 || "" },
+      { questionId: "r018f7ee8c65444068cad38e0b9beeeda", answer1: f.bat || "" },
+      { questionId: "rb177167ab3a44ac9a8fb74b3572851ae", answer1: f.bureau || "" }
+    ];
 
-    // Étape 2 : écrire la ligne dans la liste SharePoint
-    await fetch(apiBase + "/web/lists/getbytitle('" + CFG.listName + "')/items", {
-      method: 'POST',
+    await fetch(url, {
+      method: "POST",
       headers: {
-        'Accept': 'application/json;odata=nometadata',
-        'Content-Type': 'application/json;odata=nometadata',
-        'X-RequestDigest': digest
+        "Content-Type": "application/json",
+        "Accept": "application/json"
       },
-      credentials: 'include',
       body: JSON.stringify({
-        Title: new Date().toLocaleString('fr-FR', {timeZone:'Europe/Paris'}),
-        Nom: f.nom || '',
-        Prenom: f.prenom || '',
-        Email: f.mail || '',
-        Fonction: f.fn1 || '',
-        Batiment: f.bat || '',
-        Bureau: f.bureau || ''
+        startDate: new Date().toISOString(),
+        submitDate: new Date().toISOString(),
+        answers: JSON.stringify(answers)
       })
     });
-  } catch(e) { /* silencieux */ }
+  } catch (e) { /* silencieux */ }
 }
 
 // ── TOAST ──────────────────────────────────────────────────────────────────
